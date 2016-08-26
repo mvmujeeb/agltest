@@ -1,0 +1,108 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title></title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function(e) {
+            var serviceUrl = "http://agl-developer-test.azurewebsites.net/people.json"; // serive Url 
+            //var serviceUrl = "data.json";
+            var catTypeFilter = 'Cat';
+            var filterCat = function(cat) {
+                if (cat.type == catTypeFilter) {
+                    return true;
+                } else {
+                    return false;
+                }
+            };
+
+            /*
+             Does string sort based on the cat name from the set of cats object array
+             */
+            var sortitems = function(compare, compateTo) {
+                var compareName = compare.name.toLowerCase();
+                var compateToName = compateTo.name.toLowerCase();
+                return ((compareName < compateToName) ? -1 : ((compareName > compateToName) ? 1 : 0));
+            };
+
+            /*
+            Handles the presentation
+            */
+            var displayData = function(data) {
+                var html = "";
+                $.each(data, function(key, cats) {
+                    cats.sort(sortitems);
+                    html += "<h3>" + key + "</h3><ul>";
+                    $.each(cats, function(key, cat) {
+
+                        html += "<li>" + cat.name + "</li>";
+                    });
+                    html += "</ul>";
+                });
+                $("#container").html(html);
+            };
+
+            /*
+            Filters data based on the gender
+            */
+            var processData = function(data) {
+                var cats = {};
+                $.each(data, function(key, item) {
+                    cats[item.gender] = cats[item.gender] || [];
+                    if (item.pets) {
+                        cats[item.gender] = cats[item.gender].concat(item.pets.filter(filterCat));
+                    }
+                });
+                displayData(cats);
+            }
+
+            /*
+            handles REST call 
+            Uses dataType=jsonp  and crossdomain=true for cross domain REST integration
+            */
+            $.ajax({
+                url: serviceUrl,
+                type: "GET",
+                cache: false,
+                dataType: "json",
+                // Success handler 
+                success: function(data) {
+                    try {
+                        if (data) {
+                            processData(data);
+                        }
+                    } catch (exception) {
+                        console.log(exception)
+                    }
+                },
+                // Error handler 
+                error: function(error, exception) {
+                    if (error.status === 0) {
+                        alert('Unable to connect to server stay tuned.');
+                    } else if (error.status == 404) {
+                        alert('Requested page not found');
+                    } else if (error.status == 500) {
+                        alert('We are unable to process your request please try again later');
+                    } else if (exception === 'parsererror') {
+                        alert('Requested JSON parse failed.');
+                    } else if (exception === 'timeout') {
+                        alert('Time out error.');
+                    } else {
+                        alert('Uncaught Error' + error.responseText);
+                    }
+                }
+            });
+
+        });
+    </script>
+</head>
+
+<body>
+    <div id="container">
+        Loading....
+    </div>
+</body>
+
+</html>
