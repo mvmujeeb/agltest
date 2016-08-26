@@ -24,5 +24,6 @@ replace dataType: "json",
 by dataType: "jsonp",
 
 Option 4: Run the service locally (use data.json), for this index.html should be updated like below 
+
 //var serviceUrl = "http://agl-developer-test.azurewebsites.net/people.json"; // serive Url 
 var serviceUrl = "data.json";
